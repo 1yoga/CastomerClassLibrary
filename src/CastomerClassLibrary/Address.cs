@@ -31,6 +31,7 @@ namespace CastomerClassLibrary
             State = state;
             Country = country;
         }
+        
     }
    
 }

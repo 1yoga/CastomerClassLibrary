@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using CustomerClassLibrary;
 using Xunit;
+using FluentValidation;
+using FluentValidation.Results;
 
 namespace CastomerClassLibrary.Test
 {
@@ -12,21 +14,23 @@ namespace CastomerClassLibrary.Test
         {
             List<Address> addresses = new List<Address>();
             List<string> notes = new List<string>();
-            Customer customer = new Customer(new string('a', 51), addresses, notes);
+            Customer customer = new Customer(new string('b', 51), addresses, notes);
             customer.FirstName = new string('a', 51);
-            customer.PhoneNumber = "4235432543252154231";
-            customer.Email = "1yoga @-mail.ru.";
+            customer.PhoneNumber = "0123";
+            customer.Email = "petrov123-@-mail.ru.";
 
-            List<string> errors = CustomerValidator.Validate(customer);
+            CustomerValidator validator = new CustomerValidator();
+            ValidationResult result = validator.Validate(customer);
 
-            Assert.Equal(6, errors.Count);
+            Assert.True(!result.IsValid);
+            Assert.Equal(6, result.Errors.Count);
 
-            Assert.Equal("First name is longer than 50 char", errors[0]);
-            Assert.Equal("Last name is longer than 50 char", errors[1]);
-            Assert.Equal("Addresses list must contain at least 1 address", errors[2]);
-            Assert.Equal("Phone number is not in E.164 format", errors[3]);
-            Assert.Equal("Email is not valid", errors[4]);
-            Assert.Equal("Notes cannot be empty, at least 1 note must be provided", errors[5]);
+            Assert.Equal("First name should not be longer than 50 chars", result.Errors[0].ErrorMessage);
+            Assert.Equal("Last name should not be null or longer than 50 chars", result.Errors[1].ErrorMessage);
+            Assert.Equal("Addresses list must be not null and not empty", result.Errors[2].ErrorMessage);
+            Assert.Equal("Phone number must be in E.164 format", result.Errors[3].ErrorMessage);
+            Assert.Equal("Email must be valid", result.Errors[4].ErrorMessage);
+            Assert.Equal("Notes list must be not null and not empty", result.Errors[5].ErrorMessage);
         }
     }
 }

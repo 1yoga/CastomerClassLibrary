@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CastomerClassLibrary;
 using CustomerClassLibrary;
 using Xunit;
+using FluentValidation;
+using FluentValidation.Results;
 
-namespace CastomerClassLibrary.Test
+namespace CustomerClassLibrary.Test
 {
     public class AddressValidatorTest
     {
@@ -16,16 +16,19 @@ namespace CastomerClassLibrary.Test
         {
             Address address = new Address(new string('a', 101), Address.AddressTypeEnum.Shipping, new string('a', 51), "4234324235", new string('a', 21), "Russia");
             address.AddressLine2 = new string('b', 101);
-            List<string> errors = AddressValidator.Validate(address);
 
-            Assert.Equal(6, errors.Count);
+            AddressValidator validator = new AddressValidator();
+            ValidationResult result = validator.Validate(address);
 
-            Assert.Equal("AddressLine is longer than 100 char", errors[0]);
-            Assert.Equal("AddressLine2 is longer than 100 char", errors[1]);
-            Assert.Equal("City is longer than 50 char", errors[2]);
-            Assert.Equal("Postal code is longer than 6 char", errors[3]);
-            Assert.Equal("State is longer than 20 char", errors[4]);
-            Assert.Equal("Wrong country name (only United States and Canada are accepted)", errors[5]);
+            Assert.True(!result.IsValid);
+            Assert.Equal(6, result.Errors.Count);
+
+            Assert.Equal("AddressLine should not be null or longer than 100 chars", result.Errors[0].ErrorMessage);
+            Assert.Equal("AddressLine2 should not be longer than 100 chars", result.Errors[1].ErrorMessage);
+            Assert.Equal("City should not be null or longer than 50 chars", result.Errors[2].ErrorMessage);
+            Assert.Equal("Postal code should not be null or longer than 6 chars", result.Errors[3].ErrorMessage);
+            Assert.Equal("State should not be null or longer than 6 chars", result.Errors[4].ErrorMessage);
+            Assert.Equal("Wrong country name (only United States and Canada are accepted)", result.Errors[5].ErrorMessage);
 
         }
 
